@@ -14,27 +14,30 @@ import lombok.Data;
 
 // Get a discount line to print in UI
 
+
 class DiscountService {
 	public String getDiscountLine(Customer customer) {
-		return "Discount: " + getApplicableDiscountPercentage(customer.getMemberCard());
+		Optional<Integer> discount = getApplicableDiscountPercentage(customer.getMemberCard());
+		return discount.map(d -> "Discount: " + d).orElse("");
 	}
 		
-	private Integer getApplicableDiscountPercentage(MemberCard card) { 
+	private Optional<Integer> getApplicableDiscountPercentage(MemberCard card) { 
 		if (card.getFidelityPoints() >= 100) {
-			return 5;
+			return of(5);
 		}
 		if (card.getFidelityPoints() >= 50) {
-			return 3;
+			return of(3);
 		}
-		return null;
+		return empty();
 	}
 		
 	// test: 60, 10, no MemberCard
 	public static void main(String[] args) {
-		
+		DiscountService service = new DiscountService();
+		System.out.println(service.getDiscountLine(new Customer(new MemberCard(60))));
+		System.out.println(service.getDiscountLine(new Customer(new MemberCard(10))));
 	}
 }
-
 
 
 
