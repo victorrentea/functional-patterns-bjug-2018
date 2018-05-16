@@ -13,16 +13,26 @@ import lombok.Data;
 class UserFacade {
 	
 	private UserRepo userRepo;
+	//@Autowired
+	private UserMapper mapper;
 	
 	public List<UserDto> getAllUsers() {
-		return userRepo.findAll().stream().map(UserDto::new).collect(toList());
+		return userRepo.findAll().stream().map(mapper::toDto).collect(toList());
 	}
+	
+}
 
-	private UserDto toDto(User user) {
-		UserDto dto = new UserDto(user);
-//		dto.setUsername(user.getUsername());
-//		dto.setFullName(user.getFirstName() + " " + user.getLastName().toUpperCase());
-//		dto.setActive(user.getDeactivationDate() == null);
+//@Componment
+class UserMapper {
+	
+//	@Autowired
+//	Altceva altceva;
+	
+	public UserDto toDto(User user) {
+		UserDto dto = new UserDto();
+		dto.setUsername(user.getUsername());
+		dto.setFullName(user.getFirstName() + " " + user.getLastName().toUpperCase());
+		dto.setActive(user.getDeactivationDate() == null);
 		return dto;
 	}
 }
@@ -47,11 +57,13 @@ class User {
 
 @Data
 class UserDto {
-	public UserDto(User user) {
-		this.setUsername(user.getUsername());
-		this.setFullName(user.getFirstName() + " " + user.getLastName().toUpperCase());
-		this.setActive(user.getDeactivationDate() == null);
-	}
+//	@Autowired
+//	Altceva altceva;
+//	public UserDto(User user) {
+//		this.setUsername(user.getUsername());
+//		this.setFullName(user.getFirstName() + " " + user.getLastName().toUpperCase());
+//		this.setActive(user.getDeactivationDate() == null);
+//	}
 	private String fullName;
 	private String username;
 	private boolean active;
