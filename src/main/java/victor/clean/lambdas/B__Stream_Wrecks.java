@@ -20,19 +20,29 @@ class ProductService {
 	private ProductRepo productRepo;
 
 	public List<Product> getFrequentOrderedProducts(List<Order> orders) {
+		List<Long> hiddenProductIds = productRepo.getHiddenProductIds();
+		Predicate<Product> productIsNotHidden = p -> !hiddenProductIds.contains(p.getId());
+		Stream<Product> frequentProducts = getProductCountsForOrdersInThePastYear(orders).entrySet().stream()
+				.filter(entry -> entry.getValue() >= 10)
+				.map(Entry::getKey);
+		return frequentProducts
+				.filter(Product::isNotDeleted)
+				.filter(productIsNotHidden)
+				.collect(toList());
+	}
+
+	private Map<Product, Integer> getProductCountsForOrdersInThePastYear(List<Order> orders) {
 		return orders.stream()
 				.filter(o -> o.getCreationDate().isAfter(LocalDate.now().minusYears(1)))
 				.flatMap(o -> o.getOrderLines().stream())
-				.collect(groupingBy(OrderLine::getProduct, summingInt(OrderLine::getItemCount)))
-				.entrySet()
-				.stream()
-				.filter(e -> e.getValue() >= 10)
-				.map(Entry::getKey)
-				.filter(p -> !p.isDeleted())
-				.filter(p -> !productRepo.getHiddenProductIds().contains(p.getId()))
-				.collect(toList());
+				.collect(groupingBy(OrderLine::getProduct, summingInt(OrderLine::getItemCount)));
 	}
 }
+
+
+
+
+
 
 
 
@@ -41,6 +51,9 @@ class ProductService {
 //VVVVVVVVV ==== supporting (dummy) code ==== VVVVVVVVV
 @Data
 class Product {
+	public boolean isNotDeleted() {
+		return !deleted;
+	}
 	private Long id;
 	private boolean deleted;
 }

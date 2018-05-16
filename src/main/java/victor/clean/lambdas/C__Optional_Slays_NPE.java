@@ -17,11 +17,13 @@ import lombok.Data;
 
 class DiscountService {
 	public String getDiscountLine(Customer customer) {
-		Optional<Integer> discount = getApplicableDiscountPercentage(customer.getMemberCard());
-		return discount.map(d -> "Discount: " + d).orElse("");
+		return customer.getMemberCard()
+				.flatMap(card -> getApplicableDiscountPercentage(card))
+				.map(d -> "Discount: " + d)
+				.orElse("");
 	}
 		
-	private Optional<Integer> getApplicableDiscountPercentage(MemberCard card) { 
+	private Optional<Integer> getApplicableDiscountPercentage(MemberCard card) {
 		if (card.getFidelityPoints() >= 100) {
 			return of(5);
 		}
@@ -36,6 +38,7 @@ class DiscountService {
 		DiscountService service = new DiscountService();
 		System.out.println(service.getDiscountLine(new Customer(new MemberCard(60))));
 		System.out.println(service.getDiscountLine(new Customer(new MemberCard(10))));
+		System.out.println(service.getDiscountLine(new Customer()));
 	}
 }
 
@@ -53,8 +56,8 @@ class Customer {
 	public Customer(MemberCard profile) {
 		this.memberCard = profile;
 	}
-	public MemberCard getMemberCard() {
-		return memberCard;
+	public Optional<MemberCard> getMemberCard() {
+		return Optional.ofNullable(memberCard);
 	}
 }
 

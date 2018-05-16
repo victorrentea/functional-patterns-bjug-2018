@@ -12,7 +12,8 @@ class Movie {
 	enum Type {
 		REGULAR(PriceService::computeRegularPrice) , 
 		NEW_RELEASE(PriceService::computeNewReleasePrice) , 
-		CHILDREN(PriceService::computeChildrenPrice) ;
+		CHILDREN(PriceService::computeChildrenPrice)
+		;
 		public final BiFunction<PriceService, Integer, Integer> priceAlgo;
 
 		private Type(BiFunction<PriceService, Integer, Integer> priceAlgo) {
@@ -49,12 +50,6 @@ class PriceService {
 	}
 	public int computePrice(Movie.Type type, int days) {
 		return type.priceAlgo.apply(this, days);
-//		switch (type) {
-//		case REGULAR: return computeRegularPrice(days);
-//		case NEW_RELEASE: return computeNewReleasePrice(days);
-//		case CHILDREN: return computeChildrenPrice(days);
-//		default: throw new IllegalArgumentException();
-//		}
 	}
 }
 

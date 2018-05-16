@@ -17,24 +17,49 @@ import org.springframework.data.jpa.repository.JpaRepository;
 interface OrderRepo extends JpaRepository<Order, Long> { // Spring Data FanClub
 	Stream<Order> findByActiveTrue(); // 1 Mln orders ;)
 }
-class OrderExporter {
-	private final static Logger log = LoggerFactory.getLogger(OrderExporter.class);
+class FileExporter {
+	private final static Logger log = LoggerFactory.getLogger(OrderExportWriter.class);
 	
-	private OrderRepo repo;
-			
-	public File exportFile(String fileName) {
+	public File exportFile(String fileName, Consumer<Writer> contentWriter) throws Exception {
 		File file = new File("export/" + fileName);
 		try (Writer writer = new FileWriter(file)) {
-			writer.write("OrderID;Date\n");
-			repo.findByActiveTrue()
-				.map(o -> o.getId() + ";" + o.getCreationDate())
-				.forEach(writer::write);
+			contentWriter.accept(writer);
 			return file;
 		} catch (Exception e) {
-			// TODO send email notification
+			// TODO send email
 			log.debug("Gotcha!", e); // TERROR-Driven Development
 			throw e;
 		}
 	}
 }
+
+class Client {
+	public static void main(String[] args) throws Exception {
+		FileExporter fileExporter = new FileExporter();
+		OrderExportWriter orderExportWriter = new OrderExportWriter();
+		UserExportWriter userExportWriter = new UserExportWriter();
+		fileExporter.exportFile("orders.txt", Unchecked.consumer(orderExportWriter::writeOrders));
+		fileExporter.exportFile("users.txt", Unchecked.consumer(userExportWriter::writeContent));
+	}
+}
+
+class OrderExportWriter {
+	private OrderRepo repo;
+	protected void writeOrders(Writer writer) throws IOException {
+		writer.write("OrderID;Date\n");
+		repo.findByActiveTrue()
+		.map(o -> o.getId() + ";" + o.getCreationDate())
+		.forEach(Unchecked.consumer(writer::write));
+	}
+	
+}
+class UserExportWriter  {
+	protected void writeContent(Writer writer) throws IOException {
+		writer.write("UserId;FirstName\n");
+//		userRepo.findByActiveTrue()
+//			.map(o -> o.getId() + ";" + o.getCreationDate())
+//			.forEach(Unchecked.consumer(writer::write));
+	}
+}
+// CR: vreau aceeasi pentru Useri
 
