@@ -10,7 +10,6 @@ import lombok.Data;
 
 // get the list of users to UI
 
-
 class UserFacade {
 	
 	private UserRepo userRepo;
