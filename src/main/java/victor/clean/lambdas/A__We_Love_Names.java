@@ -6,10 +6,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import lombok.Data;
 
 // get the list of users to UI
 
+@Service
 class UserFacade {
 	
 	private UserRepo userRepo;
