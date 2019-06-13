@@ -17,22 +17,19 @@ import lombok.Data;
 class DiscountService {
 	public String getDiscountLine(Customer customer) {
 		return customer.getMemberCard()
-			.flatMap(card -> getDiscountPercentage(card))
-			.map(d -> "Discount%: " + d)
-			.orElse("");
+				.flatMap(card -> getDiscountPercentage(card))
+				.map(per -> "Discount%: " + per)
+				.orElse("");
 	}
 		
 	private Optional<Integer> getDiscountPercentage(MemberCard card) { 
-		if (card == null) {
-			return empty();
-		}
 		if (card.getFidelityPoints() >= 100) {
 			return of(5);
 		}
 		if (card.getFidelityPoints() >= 50) {
 			return of(3);
 		}
-		return empty();
+		return null;
 	}
 		
 	// test: 60, 10, no MemberCard

@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import lombok.SneakyThrows;
+
 // export all orders to a file
 
 interface OrderRepo extends JpaRepository<Order, Long> { // Spring Data FanClub
@@ -19,16 +21,19 @@ interface OrderRepo extends JpaRepository<Order, Long> { // Spring Data FanClub
 }
 class OrderExporter {
 	private final static Logger log = LoggerFactory.getLogger(OrderExporter.class);
+
+	public static void main(String[] args) throws Exception {
+		OrderExporter exporter = new OrderExporter(); // ne prefacem ca ne vine de la Spring. @Autopwired
+		OrderContent content = new OrderContent();
+		
+		exporter.exportFile("users.csv", content::writeUserExportContent);
+		exporter.exportFile("users.csv", content::writeOrderExportContent);
+	}
 	
-	private OrderRepo repo;
-			
-	public File exportFile(String fileName) {
+	public File exportFile(String fileName, Consumer<Writer> contentWriter) throws Exception {
 		File file = new File("export/" + fileName);
 		try (Writer writer = new FileWriter(file)) {
-			writer.write("OrderID;Date\n");
-			repo.findByActiveTrue()
-				.map(o -> o.getId() + ";" + o.getCreationDate())
-				.forEach(writer::write);
+			contentWriter.accept(writer);
 			return file;
 		} catch (Exception e) {
 			// TODO send email notification
@@ -36,5 +41,32 @@ class OrderExporter {
 			throw e;
 		}
 	}
+
 }
+class OrderContent {
+
+	private OrderRepo repo;
+	public void writeUserExportContent(Writer writer) {
+		try {
+			writer.write("username;lastname\n");
+			userRepo.findAll()
+				.stream()
+				.map(u -> u.getUsername() + ";" + u.getLastName())
+				.forEach(Unchecked.consumer(writer::write));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private UserRepo userRepo;
+	@SneakyThrows
+	public void writeOrderExportContent(Writer writer)  {
+		writer.write("OrderID;Date\n");
+		repo.findByActiveTrue()
+			.map(o -> o.getId() + ";" + o.getCreationDate())
+			.forEach(Unchecked.consumer(writer::write));
+	}
+	
+}
+
 
